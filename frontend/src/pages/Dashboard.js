@@ -14,16 +14,16 @@ function Dashboard() {
   const fetchProfile = async () => {
     try {
       const token = localStorage.getItem('access_token');
-      const response = await axios.get('http://localhost:5000/api/profile', {
+      const response = await axios.get('/api/profile', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUser(response.data);
 
-      const sessionsRes = await axios.get('http://localhost:5000/api/sessions', {
+      const sessionsRes = await axios.get('/api/sessions', {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      const activitiesRes = await axios.get('http://localhost:5000/api/activity', {
+      const activitiesRes = await axios.get('/api/activity', {
         headers: { Authorization: `Bearer ${token}` }
       });
 

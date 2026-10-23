@@ -12,7 +12,7 @@ function Activity() {
   const fetchActivity = async () => {
     try {
       const token = localStorage.getItem('access_token');
-      const response = await axios.get('http://localhost:5000/api/activity', {
+      const response = await axios.get('/api/activity', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setActivities(response.data);

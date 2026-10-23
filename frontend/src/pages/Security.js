@@ -19,7 +19,7 @@ function Security() {
 
     try {
       const token = localStorage.getItem('access_token');
-      await axios.post('http://localhost:5000/api/password/change',
+      await axios.post('/api/password/change',
         { old_password: oldPassword, new_password: newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -35,7 +35,7 @@ function Security() {
   const handleEnable2FA = async () => {
     try {
       const token = localStorage.getItem('access_token');
-      const response = await axios.post('http://localhost:5000/api/2fa/enable',
+      const response = await axios.post('/api/2fa/enable',
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -51,7 +51,7 @@ function Security() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('access_token');
-      await axios.post('http://localhost:5000/api/2fa/confirm',
+      await axios.post('/api/2fa/confirm',
         { secret: twoFASecret, code: twoFACode },
         { headers: { Authorization: `Bearer ${token}` } }
       );

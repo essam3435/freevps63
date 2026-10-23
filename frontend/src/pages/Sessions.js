@@ -13,7 +13,7 @@ function Sessions() {
   const fetchSessions = async () => {
     try {
       const token = localStorage.getItem('access_token');
-      const response = await axios.get('http://localhost:5000/api/sessions', {
+      const response = await axios.get('/api/sessions', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSessions(response.data);
@@ -27,7 +27,7 @@ function Sessions() {
   const revokeSession = async (sessionId) => {
     try {
       const token = localStorage.getItem('access_token');
-      await axios.post(`http://localhost:5000/api/sessions/${sessionId}/revoke`,
+      await axios.post(`/api/sessions/${sessionId}/revoke`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

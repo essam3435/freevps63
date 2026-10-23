@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
@@ -9,7 +9,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = Flask(__name__)
+FRONTEND_BUILD_DIR = os.path.join(os.path.dirname(__file__), 'frontend', 'build')
+
+app = Flask(__name__, static_folder=FRONTEND_BUILD_DIR, static_url_path='')
 CORS(app)
 
 # Configuration
@@ -298,6 +300,13 @@ def disable_2fa():
 @app.route('/api/health', methods=['GET'])
 def health():
     return jsonify({'status': 'ok'}), 200
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_frontend(path):
+    if path and os.path.exists(os.path.join(FRONTEND_BUILD_DIR, path)):
+        return send_from_directory(FRONTEND_BUILD_DIR, path)
+    return send_from_directory(FRONTEND_BUILD_DIR, 'index.html')
 
 if __name__ == '__main__':
     with app.app_context():
