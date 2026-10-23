@@ -6,19 +6,36 @@ import {
   StyleSheet,
   Alert,
   FlatList,
+  useWindowDimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSessionStore } from '../store/sessionStore';
 import { useState, useEffect } from 'react';
+import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  tabBar: {
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    elevation: 0,
+  },
+  tabLabel: {
+    color: '#666',
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  tabLabelActive: {
+    color: '#007AFF',
+  },
   header: {
-    paddingTop: 20,
-    paddingBottom: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
     paddingHorizontal: 15,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
@@ -27,32 +44,32 @@ const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 15,
+    marginBottom: 12,
   },
   statBox: {
     alignItems: 'center',
     flex: 1,
   },
   statNumber: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#007AFF',
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#666',
-    marginTop: 5,
+    marginTop: 3,
   },
   buttonContainer: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 15,
+    gap: 8,
+    marginTop: 10,
   },
   button: {
     flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    borderRadius: 8,
+    paddingVertical: 9,
+    paddingHorizontal: 10,
+    borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -65,7 +82,7 @@ const styles = StyleSheet.create({
     borderColor: '#d0d0d0',
   },
   buttonText: {
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: '600',
     color: '#fff',
   },
@@ -73,53 +90,48 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   listContainer: {
-    paddingHorizontal: 15,
-    paddingTop: 15,
+    paddingHorizontal: 10,
+    paddingTop: 10,
   },
   sessionCard: {
     backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 10,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 8,
     borderLeftWidth: 4,
     borderLeftColor: '#007AFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    elevation: 2,
   },
   sessionCardTerminated: {
     borderLeftColor: '#ff3b30',
     opacity: 0.6,
   },
   sessionName: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 5,
-  },
-  sessionInfo: {
-    fontSize: 13,
-    color: '#666',
     marginBottom: 3,
   },
+  sessionInfo: {
+    fontSize: 11,
+    color: '#666',
+    marginBottom: 2,
+  },
   sessionMeta: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#999',
-    marginTop: 8,
+    marginTop: 5,
   },
   statusBadge: {
-    display: 'flex',
     flexDirection: 'row',
-    marginTop: 10,
-    gap: 5,
+    marginTop: 7,
+    gap: 3,
   },
   badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 4,
-    marginRight: 5,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 3,
+    marginRight: 3,
   },
   activeBadge: {
     backgroundColor: '#34C759',
@@ -132,28 +144,28 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '600',
   },
   cardActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 12,
-    paddingTop: 12,
+    marginTop: 8,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
+    gap: 4,
   },
   actionButton: {
     flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    marginHorizontal: 3,
-    borderRadius: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 6,
+    borderRadius: 4,
     alignItems: 'center',
     backgroundColor: '#f0f0f0',
   },
   actionButtonText: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '600',
     color: '#007AFF',
   },
@@ -164,38 +176,64 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: 13,
     color: '#999',
     textAlign: 'center',
   },
+  featureGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: 10,
+    gap: 8,
+  },
+  featureCard: {
+    width: '48%',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+    elevation: 2,
+  },
+  featureIcon: {
+    fontSize: 24,
+    marginBottom: 6,
+  },
+  featureTitle: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#333',
+    textAlign: 'center',
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#333',
+    marginLeft: 15,
+    marginTop: 12,
+    marginBottom: 8,
+  },
 });
 
-export default function HomeScreen() {
+// Sessions Tab
+function SessionsTab() {
   const router = useRouter();
   const sessions = useSessionStore((state) => state.sessions);
   const removeSession = useSessionStore((state) => state.removeSession);
   const terminateSessions = useSessionStore((state) => state.terminateSessions);
-  const [selectedSessions, setSelectedSessions] = useState<Set<string>>(new Set());
 
   const activeSessions = sessions.filter((s) => s.status === 'active');
   const inactiveSessions = sessions.filter((s) => s.status === 'inactive');
   const terminatedSessions = sessions.filter((s) => s.status === 'terminated');
 
   const handleKillSession = (id: string) => {
-    Alert.alert(
-      'Terminate Session',
-      'Are you sure you want to terminate this session?',
-      [
-        { text: 'Cancel', onPress: () => {}, style: 'cancel' },
-        {
-          text: 'Terminate',
-          onPress: () => {
-            terminateSessions([id]);
-          },
-          style: 'destructive',
-        },
-      ]
-    );
+    Alert.alert('Terminate Session', 'Kill this session?', [
+      { text: 'Cancel', onPress: () => {}, style: 'cancel' },
+      {
+        text: 'Kill',
+        onPress: () => terminateSessions([id]),
+        style: 'destructive',
+      },
+    ]);
   };
 
   const handleKillOtherSessions = () => {
@@ -209,15 +247,13 @@ export default function HomeScreen() {
       return;
     }
     Alert.alert(
-      'Auto Terminate',
-      `This will terminate ${otherSessions.length} session(s) older than 24 hours.`,
+      'Auto Kill 24h+',
+      `Kill ${otherSessions.length} session(s)?`,
       [
         { text: 'Cancel', onPress: () => {}, style: 'cancel' },
         {
-          text: 'Terminate',
-          onPress: () => {
-            terminateSessions(otherSessions.map((s) => s.id));
-          },
+          text: 'Kill',
+          onPress: () => terminateSessions(otherSessions.map((s) => s.id)),
           style: 'destructive',
         },
       ]
@@ -238,7 +274,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <View style={styles.statsContainer}>
           <View style={styles.statBox}>
@@ -251,7 +287,7 @@ export default function HomeScreen() {
           </View>
           <View style={styles.statBox}>
             <Text style={styles.statNumber}>{terminatedSessions.length}</Text>
-            <Text style={styles.statLabel}>Terminated</Text>
+            <Text style={styles.statLabel}>Dead</Text>
           </View>
         </View>
 
@@ -260,14 +296,14 @@ export default function HomeScreen() {
             style={[styles.button, styles.primaryButton]}
             onPress={() => router.push('/upload')}
           >
-            <Text style={styles.buttonText}>+ Upload</Text>
+            <Text style={styles.buttonText}>+ Add</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, styles.secondaryButton]}
             onPress={handleKillOtherSessions}
           >
             <Text style={[styles.buttonText, styles.secondaryButtonText]}>
-              Auto Kill 24h+
+              Kill 24h+
             </Text>
           </TouchableOpacity>
         </View>
@@ -275,9 +311,7 @@ export default function HomeScreen() {
 
       {sessions.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>
-            No sessions yet. Upload session files to get started.
-          </Text>
+          <Text style={styles.emptyText}>No sessions yet. Add one to start.</Text>
         </View>
       ) : (
         <FlatList
@@ -291,28 +325,19 @@ export default function HomeScreen() {
               ]}
             >
               <Text style={styles.sessionName}>{item.name}</Text>
-              <Text style={styles.sessionInfo}>Phone: {item.phoneNumber}</Text>
-              <Text style={styles.sessionInfo}>App ID: {item.appId}</Text>
-              <Text style={styles.sessionInfo}>
-                2FA: {item.has2FA ? 'Enabled' : 'Disabled'}
-              </Text>
+              <Text style={styles.sessionInfo}>{item.phoneNumber}</Text>
+              <Text style={styles.sessionInfo}>ID: {item.appId}</Text>
 
               <View style={styles.statusBadge}>
                 <View style={[styles.badge, getStatusColor(item.status)]}>
-                  <Text style={styles.badgeText}>{item.status.toUpperCase()}</Text>
+                  <Text style={styles.badgeText}>{item.status}</Text>
                 </View>
                 {item.otpCodes.length > 0 && (
                   <View style={[styles.badge, { backgroundColor: '#5856D6' }]}>
-                    <Text style={styles.badgeText}>
-                      {item.otpCodes.length} OTP
-                    </Text>
+                    <Text style={styles.badgeText}>{item.otpCodes.length}📱</Text>
                   </View>
                 )}
               </View>
-
-              <Text style={styles.sessionMeta}>
-                Created: {new Date(item.createdAt).toLocaleString()}
-              </Text>
 
               <View style={styles.cardActions}>
                 <TouchableOpacity
@@ -348,10 +373,157 @@ export default function HomeScreen() {
               </View>
             </View>
           )}
+          scrollEnabled={false}
           contentContainerStyle={styles.listContainer}
-          scrollEnabled={true}
         />
       )}
-    </View>
+    </ScrollView>
+  );
+}
+
+// Tools Tab
+function ToolsTab() {
+  const sessions = useSessionStore((state) => state.sessions);
+  const router = useRouter();
+
+  const tools = [
+    { icon: '🔍', title: 'Check Spam', action: () => Alert.alert('Check Spam', 'Check if accounts are spam') },
+    { icon: '📱', title: 'Read Codes', action: () => Alert.alert('Read OTP', 'View all OTP codes') },
+    { icon: '🔐', title: '2FA Manager', action: () => Alert.alert('2FA', 'Manage 2FA settings') },
+    { icon: '💬', title: 'Send Message', action: () => Alert.alert('Message', 'Send messages from sessions') },
+    { icon: '⚡', title: 'Kill Sessions', action: () => router.push('/') },
+    { icon: '✅', title: 'Validate', action: () => Alert.alert('Validate', 'Validate session accounts') },
+    { icon: '📊', title: 'Account Info', action: () => Alert.alert('Info', 'Get user information') },
+    { icon: '🧹', title: 'Account Clean', action: () => Alert.alert('Clean', 'Clean inactive accounts') },
+  ];
+
+  return (
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <View style={styles.header}>
+        <Text style={styles.sectionTitle}>
+          Tools ({sessions.length} sessions)
+        </Text>
+      </View>
+      <View style={styles.featureGrid}>
+        {tools.map((tool, idx) => (
+          <TouchableOpacity
+            key={idx}
+            style={styles.featureCard}
+            onPress={tool.action}
+          >
+            <Text style={styles.featureIcon}>{tool.icon}</Text>
+            <Text style={styles.featureTitle}>{tool.title}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </ScrollView>
+  );
+}
+
+// Stats Tab
+function StatsTab() {
+  const sessions = useSessionStore((state) => state.sessions);
+
+  const activeSessions = sessions.filter((s) => s.status === 'active').length;
+  const inactiveSessions = sessions.filter((s) => s.status === 'inactive').length;
+  const terminatedSessions = sessions.filter((s) => s.status === 'terminated').length;
+  const totalOTPCodes = sessions.reduce((sum, s) => sum + s.otpCodes.length, 0);
+  const accounts2FA = sessions.filter((s) => s.has2FA).length;
+
+  return (
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <View style={styles.header}>
+        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#333' }}>
+          📊 Statistics
+        </Text>
+      </View>
+
+      <View style={styles.featureGrid}>
+        <View style={styles.featureCard}>
+          <Text style={styles.featureIcon}>📱</Text>
+          <Text style={styles.featureTitle}>Total Sessions</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#007AFF', marginTop: 4 }}>
+            {sessions.length}
+          </Text>
+        </View>
+
+        <View style={styles.featureCard}>
+          <Text style={styles.featureIcon}>✅</Text>
+          <Text style={styles.featureTitle}>Active</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#34C759', marginTop: 4 }}>
+            {activeSessions}
+          </Text>
+        </View>
+
+        <View style={styles.featureCard}>
+          <Text style={styles.featureIcon}>⚠️</Text>
+          <Text style={styles.featureTitle}>Inactive</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#FF9500', marginTop: 4 }}>
+            {inactiveSessions}
+          </Text>
+        </View>
+
+        <View style={styles.featureCard}>
+          <Text style={styles.featureIcon}>💀</Text>
+          <Text style={styles.featureTitle}>Terminated</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#ff3b30', marginTop: 4 }}>
+            {terminatedSessions}
+          </Text>
+        </View>
+
+        <View style={styles.featureCard}>
+          <Text style={styles.featureIcon}>📝</Text>
+          <Text style={styles.featureTitle}>OTP Codes</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#5856D6', marginTop: 4 }}>
+            {totalOTPCodes}
+          </Text>
+        </View>
+
+        <View style={styles.featureCard}>
+          <Text style={styles.featureIcon}>🔐</Text>
+          <Text style={styles.featureTitle}>2FA Enabled</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#FF9500', marginTop: 4 }}>
+            {accounts2FA}
+          </Text>
+        </View>
+      </View>
+    </ScrollView>
+  );
+}
+
+// Main component
+export default function HomeScreen() {
+  const layout = useWindowDimensions();
+  const [index, setIndex] = useState(0);
+  const [routes] = useState([
+    { key: 'sessions', title: '📱 Sessions', icon: '📱' },
+    { key: 'tools', title: '🛠️ Tools', icon: '🛠️' },
+    { key: 'stats', title: '📊 Stats', icon: '📊' },
+  ]);
+
+  const renderScene = SceneMap({
+    sessions: SessionsTab,
+    tools: ToolsTab,
+    stats: StatsTab,
+  });
+
+  return (
+    <TabView
+      navigationState={{ index, routes }}
+      renderScene={renderScene}
+      onIndexChange={setIndex}
+      initialLayout={{ width: layout.width }}
+      renderTabBar={(props) => (
+        <TabBar
+          {...props}
+          style={styles.tabBar}
+          indicatorStyle={{ backgroundColor: '#007AFF' }}
+          labelStyle={styles.tabLabel}
+          activeColor="#007AFF"
+          inactiveColor="#999"
+        />
+      )}
+      sceneContainerStyle={{ backgroundColor: '#f5f5f5' }}
+    />
   );
 }
