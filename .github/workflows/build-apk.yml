@@ -1,0 +1,109 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ ccr-fa31c79c-3jh53g, main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 34
+          build-tools-version: '34.0.0'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Create assets
+        run: |
+          mkdir -p assets
+          python3 << 'PYTHON'
+          from PIL import Image, ImageDraw
+
+          # Create icon
+          img = Image.new('RGB', (192, 192), color='#007AFF')
+          draw = ImageDraw.Draw(img)
+          img.save('assets/icon.png')
+
+          # Create splash
+          splash = Image.new('RGB', (1284, 2556), color='#007AFF')
+          splash.save('assets/splash.png')
+
+          # Create adaptive icon
+          adaptive = Image.new('RGB', (216, 216), color='#007AFF')
+          adaptive.save('assets/adaptive-icon.png')
+          PYTHON
+
+      - name: Prebuild native code
+        run: npx expo prebuild --clean --platform android
+
+      - name: Build APK
+        run: |
+          cd android
+          ./gradlew assembleDebug -x lint
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: apk-${{ github.run_number }}
+          release_name: APK Build #${{ github.run_number }}
+          body: |
+            📱 Telegram Session Manager APK
+
+            **Download:** app-debug.apk
+
+            Features:
+            - Session management
+            - OTP code storage
+            - 2FA management
+            - Kill sessions (individual & bulk)
+            - Session cloning
+            - Auto-cleanup old sessions
+
+            **Installation:**
+            1. Download app-debug.apk from artifacts
+            2. Transfer to your phone
+            3. Install (may need "Unknown Apps" permission)
+            4. Done! 🎉
+          draft: false
+          prerelease: false
+
+      - name: Upload to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: android/app/build/outputs/apk/debug/app-debug.apk
+          asset_name: app-debug.apk
+          asset_content_type: application/vnd.android.package-archive

@@ -27,15 +27,6 @@
     "web": {
       "bundler": "metro",
       "output": "static"
-    },
-    "plugins": [
-      [
-        "expo-document-picker",
-        {
-          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
-          "documentPickerPermission": "Allow $(PRODUCT_NAME) to access your documents."
-        }
-      ]
-    ]
+    }
   }
 }
