@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: account-manager-web
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=sqlite:///account_manager.db
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-secret-key-change-in-production}
+    volumes:
+      - .:/app
+      - instance:/app/instance
+    command: flask run --host=0.0.0.0
+    restart: unless-stopped
+
+volumes:
+  instance:
